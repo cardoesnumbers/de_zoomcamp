@@ -67,6 +67,36 @@ All that accounted pgadmin should use the db (service name) : 5432 (default post
 
 
 Question 3. Preparing the data.
-- I downloaded the data locally, will try the script now. 
-- Before I want to make sure I understand what I am doing. 
+- I downloaded the data locally. I loaded the data to the existing ny_taxi database from the walkthrough exercise via notebook. I m not using the chunks method as the data seems managable, around 400k rows?
+- I am also using the docker compose file for postgres and pgadmin. Out of curiosity I tried to connect to the database using dBeaver but had issues with the password (?) so I am sticking with pgamin for now. Interested in testing more. 
+
+So: First, start the dock compose with the 2 containers, then add the green taxi to the database via jupyter nb and then proceed to query the data.
+
+from sqlalchemy import create_engine
+engine = create_engine('postgresql://root:root@localhost:5432/ny_taxi')
+
+path = "https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2025-11.parquet"
+
+df_green = pd.read_parquet(path)
+
+df_green.head()
+
+df_green.shape
+
+df_green.to_sql(name='green', con=engine, if_exists='replace')
+
+
+--Question 5. Biggest pickup zone
+--Which was the pickup zone with the largest total_amount 
+--(sum of all trips) on November 18th, 2025?
+
+select 
+	cast(gt."lpep_pickup_datetime" as DATE) as pickup_date,
+	z."Zone",
+	count(1)
+from green_taxi gt
+left join Zones z on gt."PULocationID" = z."LocationID" 
+where cast(gt."lpep_pickup_datetime" as DATE) = '2025-11-18'
+group by pickup_date, z."Zone"
+order by count(1) DESC
 
