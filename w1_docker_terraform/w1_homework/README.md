@@ -86,17 +86,37 @@ df_green.shape
 df_green.to_sql(name='green', con=engine, if_exists='replace')
 
 
---Question 5. Biggest pickup zone
---Which was the pickup zone with the largest total_amount 
---(sum of all trips) on November 18th, 2025?
+Question 5. Biggest pickup zone.Which was the pickup zone with the largest total_amount (sum of all trips) on November 18th, 2025? Answer: East Harlem North
 
 select 
 	cast(gt."lpep_pickup_datetime" as DATE) as pickup_date,
 	z."Zone",
-	count(1)
+	round(sum(gt."total_amount"))
 from green_taxi gt
 left join Zones z on gt."PULocationID" = z."LocationID" 
 where cast(gt."lpep_pickup_datetime" as DATE) = '2025-11-18'
 group by pickup_date, z."Zone"
 order by count(1) DESC
+limit 5
 
+
+Question 6. Largest tip
+For the passengers picked up in the zone named "East Harlem North" in November 2025, which was the drop off zone that had the largest tip? Answer: Yorkville West
+
+
+select
+	gt."DOLocationID",
+	z."Zone",
+	z."service_zone",
+	max(gt."tip_amount") as largest_tip
+from Zones z
+join green_taxi gt 
+	on z."LocationID" = gt."DOLocationID"
+where
+	gt."PULocationID" = 74
+--and gt."lpep_pickup_datetime" >= DATE '2025-11-01'
+--and gt."lpep_pickup_datetime" <  DATE '2025-12-01' 
+-- no need because the records show only November 2025 anyway
+group by z."service_zone", gt."PULocationID", gt."DOLocationID", z."Zone"
+order by largest_tip DESC
+limit 1
