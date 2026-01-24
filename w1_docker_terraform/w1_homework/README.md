@@ -83,8 +83,35 @@ df_green.head()
 
 df_green.shape
 
-df_green.to_sql(name='green', con=engine, if_exists='replace')
+df_green.to_sql(name='green_taxi', con=engine, if_exists='replace')
 
+
+Question 3. Counting short trips
+For the trips in November 2025 (lpep_pickup_datetime between '2025-11-01' and '2025-12-01', exclusive of the upper bound), how many trips had a trip_distance of less than or equal to 1 mile?
+
+--how many trips had a trip_distance of less than or equal to 1 mile? Answer = 8007
+
+select 
+	count(trip_distance)
+from
+	green_taxi
+where 
+	lpep_pickup_datetime >= '2025-11-01'
+and lpep_pickup_datetime < '2025-12-01' (exclusive of upper bound)   
+and trip_distance <= 1;
+
+
+Question 4. Longest trip for each day
+Which was the pick up day with the longest trip distance? Only consider trips with trip_distance less than 100 miles (to exclude data errors).  Answer = November 14 or 2025-11-14
+
+select
+	cast(lpep_pickup_datetime as date) as "day",
+	max(trip_distance) as longest_trip
+from green_taxi
+where trip_distance < 100
+group by cast(lpep_pickup_datetime as date), trip_distance
+order by trip_distance desc
+limit 5
 
 Question 5. Biggest pickup zone.Which was the pickup zone with the largest total_amount (sum of all trips) on November 18th, 2025? Answer: East Harlem North
 
