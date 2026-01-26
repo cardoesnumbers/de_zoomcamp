@@ -1,7 +1,7 @@
 #Week 1 Homework
 
 
-Question 1. Understanding Docker images
+Question 1. Understanding Docker images. Answer: pip version 25.3
 
 Run docker with the python:3.13 image. Use an entrypoint bash to interact with the container.
 
@@ -9,6 +9,19 @@ I need a docker container of python 3.13 (in this case using the relevant Debian
 - Pull the image
 - command RUN + -it (interactive terminal) + setting the entrypoint + [docker image] (from Video)
 - interact with it :)
+
+@cardoesnumbers ➜ /workspaces/de_zoomcamp/w1_docker_terraform/pipeline (main) $ docker --version
+Docker version 28.5.1-1, build e180ab8ab82d22b7895a3e6e110cf6dd5c45f1d7
+@cardoesnumbers ➜ /workspaces/de_zoomcamp/w1_docker_terraform/pipeline (main) $ docker pull python:3.13
+3.13: Pulling from library/python
+Digest: sha256:c8b03b4e98b39cfb180a5ea13ae5ee39039a8f75ccf52fe6d5c216eed6e1be1d
+Status: Image is up to date for python:3.13
+docker.io/library/python:3.13
+@cardoesnumbers ➜ /workspaces/de_zoomcamp/w1_docker_terraform/pipeline (main) $ docker run -it --entrypoint bash python:3.13
+root@7ac1463f2370:/# pip --version
+pip 25.3 from /usr/local/lib/python3.13/site-packages/pip (python 3.13)
+
+Trying other python versions:
 
 @cardoesnumbers ➜ /workspaces/de_zoomcamp/w1_docker_terraform/w1_homework (main) $ docker --version
 Docker version 28.5.1-1, build e180ab8ab82d22b7895a3e6e110cf6dd5c45f1d7
@@ -21,13 +34,8 @@ b6e251ce53ea: Pull complete
 Digest: sha256:97e9392d12279f8c180eb80f0c7c0f3dfe5650f0f2573f7ad770aea58f75ed12
 Status: Downloaded newer image for python:3.13-slim-bookworm
 docker.io/library/python:3.13-slim-bookworm
-@cardoesnumbers ➜ /workspaces/de_zoomcamp/w1_docker_terraform/w1_homework (main) $ docker run -it --entrypoint batch python:3.13-slim-bookworm
-docker: Error response from daemon: failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: "batch": executable file not found in $PATH: unknown
-Run 'docker run --help' for more information
 
-@cardoesnumbers ➜ /workspaces/de_zoomcamp/w1_docker_terraform/w1_homework (main) $ docker run -it --entrypoint bash python:3.13-slim-bookw
-orm
-
+@cardoesnumbers ➜ /workspaces/de_zoomcamp/w1_docker_terraform/w1_homework (main) $ docker run -it --entrypoint bash python:3.13-slim-bookworm
 root@6b59de9441d8:/# python --version
 Python 3.13.11
 root@6b59de9441d8:/# which python
@@ -36,7 +44,7 @@ root@6b59de9441d8:/# which python
 root@6b59de9441d8:/# pip list
 Package Version
 ------- -------
-pip     25.3
+pip     25.3 (same)
 
 root@6b59de9441d8:/# cat /etc/os-release
 PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
