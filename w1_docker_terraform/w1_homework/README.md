@@ -1,7 +1,7 @@
-#Week 1 Homework
+# Week 1 Homework
 
 
-Question 1. Understanding Docker images. Answer: pip version 25.3
+## Question 1. Understanding Docker images. Answer: pip version 25.3
 
 Run docker with the python:3.13 image. Use an entrypoint bash to interact with the container.
 
@@ -65,7 +65,7 @@ exit
 
 
 
-Question 2. Given the following docker-compose.yaml, what is the hostname and port that pgadmin should use to connect to the postgres database?
+## Question 2. Given the following docker-compose.yaml, what is the hostname and port that pgadmin should use to connect to the postgres database? Answer: db:5432
 
 - In Docker compose files the containers or services are automatically connected (to the same network) using their service names (pgadmin or db in this case). 
 - When it comes to the port data, I get port information is: [port to access in local machine]:[port inside the container]
@@ -74,7 +74,8 @@ Question 2. Given the following docker-compose.yaml, what is the hostname and po
 All that accounted pgadmin should use the db (service name) : 5432 (default postgres port).
 
 
-Question 3. Preparing the data.
+## Question 3. 
+**Preparing the data**
 - I downloaded the data locally. I loaded the data to the existing ny_taxi database from the walkthrough exercise via notebook. I m not using the chunks method as the data seems managable, around 400k rows?
 - I am also using the docker compose file for postgres and pgadmin. Out of curiosity I tried to connect to the database using dBeaver but had issues with the password (?) so I am sticking with pgamin for now. Interested in testing more. 
 
@@ -94,10 +95,11 @@ df_green.shape
 df_green.to_sql(name='green_taxi', con=engine, if_exists='replace')
 
 
-Question 3. Counting short trips
+**Counting short trips**
+
 For the trips in November 2025 (lpep_pickup_datetime between '2025-11-01' and '2025-12-01', exclusive of the upper bound), how many trips had a trip_distance of less than or equal to 1 mile?
 
---how many trips had a trip_distance of less than or equal to 1 mile? Answer = 8007
+--how many trips had a trip_distance of less than or equal to 1 mile? **Answer: 8007**
 
 select 
 	count(trip_distance)
@@ -109,8 +111,8 @@ and lpep_pickup_datetime < '2025-12-01' (exclusive of upper bound)
 and trip_distance <= 1;
 
 
-Question 4. Longest trip for each day
-Which was the pick up day with the longest trip distance? Only consider trips with trip_distance less than 100 miles (to exclude data errors).  Answer = November 14 or 2025-11-14
+## Question 4. Longest trip for each day
+Which was the pick up day with the longest trip distance? Only consider trips with trip_distance less than 100 miles (to exclude data errors).  **Answer = November 14 or 2025-11-14**
 
 select
 	cast(lpep_pickup_datetime as date) as "day",
@@ -121,7 +123,7 @@ group by cast(lpep_pickup_datetime as date), trip_distance
 order by trip_distance desc
 limit 5
 
-Question 5. Biggest pickup zone.Which was the pickup zone with the largest total_amount (sum of all trips) on November 18th, 2025? Answer: East Harlem North
+## Question 5. Biggest pickup zone.Which was the pickup zone with the largest total_amount (sum of all trips) on November 18th, 2025? Answer: East Harlem North
 
 select 
 	cast(gt."lpep_pickup_datetime" as DATE) as pickup_date,
@@ -135,8 +137,7 @@ order by count(1) DESC
 limit 5
 
 
-Question 6. Largest tip
-For the passengers picked up in the zone named "East Harlem North" in November 2025, which was the drop off zone that had the largest tip? Answer: Yorkville West
+## Question 6. Largest tip. For the passengers picked up in the zone named "East Harlem North" in November 2025, which was the drop off zone that had the largest tip? Answer: Yorkville West
 
 
 select
@@ -155,3 +156,18 @@ where
 group by z."service_zone", gt."PULocationID", gt."DOLocationID", z."Zone"
 order by largest_tip DESC
 limit 1
+
+
+## Question 7. Terraform Workflow. Which of the following sequences, respectively, describes the workflow for:
+
+    Downloading the provider plugins and setting up backend,
+    Generating proposed changes and auto-executing the plan
+    Remove all resources managed by terraform`
+
+**Answer: terraform init, terraform apply -auto-approve, terraform destroy**
+
+terraform init (from workshop video): it starts the infra described in main.tf
+
+terraform apply --auto-approve (not covered in video but via: https://developer.hashicorp.com/terraform/cli/commands/apply) 
+
+terraform destroy (from video)
