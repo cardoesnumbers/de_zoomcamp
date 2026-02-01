@@ -8,3 +8,7 @@ Finally got to Kestras login page. The main issue preventing this was localhost:
 - I guess the intention was to run this locally?
 
 I also had the original docker compose file in the same folder, even with a different name (but same extension) it seemsd to be causing some confusion when running the docker compose up command. At the end I changed the extension to .bak 
+
+
+After checking best practices I am sticking to develop locally which SIGNIFICANTLY reduced the setup time.
+
