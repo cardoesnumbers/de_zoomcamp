@@ -20,7 +20,7 @@ I decided to take on this course because it seems like a natural continuation of
 + Introduction to GCP 
 
 
-Comments and homework for this module can be found [here](/workspaces/de_zoomcamp/w1_docker_terraform/w1_homework/README.md).
+Comments and homework for this module can be found [here](w1_docker_terraform/w1_homework/README.md).
 
 
 **Module 2: Workflow Orchestration**
@@ -28,7 +28,7 @@ Comments and homework for this module can be found [here](/workspaces/de_zoomcam
 + Getting Started With Kestra
 + Hands-On Coding Project: Build ETL Data Pipelines with Kestra
 
-Comments and homework for this module right [here](/workspaces/de_zoomcamp/w2_kestra/README.md).
+Comments and homework for this module right [here](w2_kestra/README.md).
 
 
 
