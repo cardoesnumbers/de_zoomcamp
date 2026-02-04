@@ -1,7 +1,10 @@
 # Repository for the Data Engineering Zoomcamp 2026
 
 
-link to the course: https://github.com/DataTalksClub/data-engineering-zoomcamp
+DataTalks 9-week zoomcamp (Jan–Mar 2026).
+
+
+For more information: https://github.com/DataTalksClub/data-engineering-zoomcamp
 
 
 ## Why?
