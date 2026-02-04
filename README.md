@@ -6,7 +6,7 @@ link to the course: https://github.com/DataTalksClub/data-engineering-zoomcamp
 
 ## Why?
 
-I decided to take on this course because it seems like a natural continuation of the work I have been doing with data, that is, making sure data flows across different stage to fulfill a purpose, without breaking on the way there. The possibility of learning the use cases of additional tools primarily design with this process (the moving of data) was just to good to pass as it aligns directly with my interest both working with data and optimizing processes (thats the engineer in me speaking).
+I decided to take on this course because it seems like a natural continuation of the work I have been doing with data, that is, making sure it flows across different stages to fulfill a purpose; without breaking on the way there. The possibility of learning use cases of additional tools primarily designed with this process (the moving of data) in mind was just to good to pass as it aligns directly with my interest both working with data and optimizing processes (thats the engineer in me speaking).
 
 
 
