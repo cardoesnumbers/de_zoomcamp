@@ -256,3 +256,5 @@ terraform.rc
 # GCP credentials
 **/keys/
 **/*creds*.json
+
+keys.json
