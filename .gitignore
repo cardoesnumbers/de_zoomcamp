@@ -261,3 +261,5 @@ keys.json
 
 
 w1_docker_terraform/pipeline/.env
+
+SECRET_GCP_CREDS
