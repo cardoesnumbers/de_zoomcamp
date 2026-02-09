@@ -258,3 +258,6 @@ terraform.rc
 **/*creds*.json
 
 keys.json
+
+
+w1_docker_terraform/pipeline/.env
