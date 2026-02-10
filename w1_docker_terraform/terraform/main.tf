@@ -8,15 +8,14 @@ terraform {
 }
 
 provider "google" {
-  project     = "terraform-demo-485312"
-  region      = "EU"
-
-
+  project     = var.project
+  region      = var.region
 }
 
 resource "google_storage_bucket" "demo-bucket" {
-  name          = "dezc-485312"
-  location      = "EU"
+  name          = var.gcs_bucket_name
+  location      = var.location
+  storage_class = var.gcs_storage_class
   force_destroy = true
 
    lifecycle_rule {
@@ -30,8 +29,8 @@ resource "google_storage_bucket" "demo-bucket" {
 }
 
 resource "google_bigquery_dataset" "zoomcamp" {
-  dataset_id = "zoomcamp"
-  location   = "EU"
+  dataset_id = var.bq_dataset_name
+  location   = var.location
 }
 
 output "gcs_bucket_name" {

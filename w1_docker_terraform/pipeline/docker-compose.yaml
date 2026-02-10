@@ -60,8 +60,9 @@ services:
       - kestra_data:/app/storage
       - /var/run/docker.sock:/var/run/docker.sock
       - kestra_tmp:/tmp/kestra-wd
+      - ./pipeline/gcp_key.json:/app/gcp_key.json:ro
     environment:
-      SECRET_GCP_CREDS: ==rotated==
+      SECRET_GCP_CREDS: ==
       KESTRA_CONFIGURATION: |
         datasources:
           postgres:

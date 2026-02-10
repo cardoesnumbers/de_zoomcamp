@@ -259,7 +259,9 @@ terraform.rc
 
 keys.json
 
-
+**/gcp_key.json
+w1_docker_terraform/pipeline/gcp_key.json
 w1_docker_terraform/pipeline/.env
+
 
 SECRET_GCP_CREDS

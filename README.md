@@ -34,6 +34,9 @@ Comments and homework for this module can be found [here](w1_docker_terraform/w1
 Comments and homework for this module right [here](w2_kestra/README.md).
 
 
+Additionally, in this module I tested Github secrets built-in protection (**GitGuardian**) which sent a message soon after my secrets were exposed. Secrets were rotated, that is, new were created and exposed ones were revoked. Section showing the secret was also removed from compromised file. Old dead secret kept (for now?) in commit history.
+
+
 ## Next up
 
 - Module 3: Data Warehousing (BigQuery, Partitioning, Machine learning in BigQuery)
