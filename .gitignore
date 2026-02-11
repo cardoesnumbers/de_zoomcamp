@@ -258,7 +258,7 @@ terraform.rc
 **/*creds*.json
 
 keys.json
-
+/gcp_key.json
 **/gcp_key.json
 w1_docker_terraform/pipeline/gcp_key.json
 w1_docker_terraform/pipeline/.env
