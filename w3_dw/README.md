@@ -54,13 +54,15 @@ SELECT * FROM `XXXX.rides_dataset.rides_external`;
 
 **Question 1. Counting records What is count of records for the 2024 Yellow Taxi Data?**
 
+~~~~sql
 select
 count(*)
 from `rides_dataset.rides_internal`;
+~~~~
 
     65,623
     840,402
-    20,332,093 <<<
+    20,332,093 <<< 📌
     85,431,289
 
 
