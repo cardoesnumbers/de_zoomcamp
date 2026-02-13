@@ -82,7 +82,7 @@ select
 ~~~~
 
 
-![big_query](images/w3_1.png)
+![big_query](../images/w3_1.png)
 
     18.82 MB for the External Table and 47.60 MB for the Materialized Table
     0 MB for the External Table and 155.12 MB for the Materialized Table <<< 📌
@@ -96,7 +96,7 @@ select
     BigQuery duplicates data across multiple storage partitions, so selecting two columns instead of one requires scanning the table twice, doubling the estimated bytes processed.
     
     BigQuery automatically caches the first queried column, so adding a second column increases processing time but does not affect the estimated bytes scanned.
-    
+
     When selecting multiple columns, BigQuery performs an implicit join operation between them, increasing the estimated bytes processed
 
 For this answer I checked BQ pricing on Google Cloud documentation naamely:
@@ -190,7 +190,7 @@ WHERE
 
     Big Query
     Container Registry
-    GCP Bucket <<<
+    GCP Bucket <<< 📌
     Big Table
 
 
