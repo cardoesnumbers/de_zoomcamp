@@ -4,16 +4,21 @@
 
 ### Module Comments
 
-This module has been really tough to follow (right now using the dlt path). The main challenge is getting my head around dlt setup:
-- becoming familiar with dlt commands, not really there yet.
+Path: dlt/cloud 
+
+Used: VS Code, GCP, Python, Google Colab, dlt
+
+This module was not easy as I ran into many errors mostly linked to authentication which remains a bit abstract for me. dlt is also new so I wasnt (am?) not familiar with dlt commands, so these are two areas I will look more into. Once the setup challenges were reviewed work on BQ and Colab was easier. More below.
+
 - Dlt upload script ran into some misunderstandings regarding how GCP credentials were handled.
-- Secrets management is pretty straight forward working in Colab and its already part of the GCP/Google ecosystem.
+- Secrets management is pretty straight forward working in Colab as it is already part of the GCP/Google ecosystem.
 - Those issues with GCP credentials were luckily sorted out with the help of Gemini in Colab
-- I was hoping an interface for DuckDB?
+- I was hoping duckdb had an interface similar to pgadmin :)
+- Was confused by not being able to find the rides dataset in BigQuery, turns out this should have been expected as I was following the course suggested ingestions steps and the first step was to move the parquet to duckdb for testing (and later to BQ for prod).
+- Nice to work with parquet files, particularly the amount of time it saves making sure the scheme/datatypes are correct.
+- When doing the ingestion into BQ ran into a couple of errors which reminded I'd used a separate service account for this module ([least privilege principle!](https://owasp.org/www-community/controls/Least_Privilege_Principle)), so again authentication. This was sorted out by granting this particular service account the needed permission.
 
-Was confused by not being able to find the rides dataset in BigQuery, turns out this should have been expected as I was following the course suggested ingestions steps and the first phase is to move the parquet to duckdb for testing (and later to BQ for prod)
-
-When running the ingestion into BQ ran into a couple of errors which reminded I'd used a separate service account for the dlt/BigQuery module.
+Examples below:
 
 Forbidden: 403 POST: Access Denied: User does not have bigquery.jobs.create permission in project...
 
@@ -21,8 +26,7 @@ and
 
 Forbidden: 403 POST: Access Denied: User does not have permission to query table...
 
-This was sorted out by granting this particular service account the needed permission.
-
+PS: becoming much better at writing READMEs and markdown! 😎
 
 ## Homework
 
@@ -76,11 +80,11 @@ count(distinct pu_location_id)
 from
 (select
   pu_location_id
-  from `rides_dataset.rides_external` --just taking location col in the the external table
+ from `rides_dataset.rides_external` --just location col in the the external table
 union all
 select
   pu_location_id
-  from `rides_dataset.rides_internal`); --just taking location col in the the external table
+  from `rides_dataset.rides_internal`); --just location col in the materialized table
 ~~~~
 
 
@@ -92,6 +96,22 @@ select
     0 MB for the External Table and 0MB for the Materialized Table
 
 **Question 3. Understanding columnar storage. Write a query to retrieve the PULocationID from the table (not the external table) in BigQuery. Now write a query to retrieve the PULocationID and DOLocationID on the same table. Why are the estimated number of Bytes different?**
+
+~~~~sql
+SELECT 
+pu_location_id,
+FROM `rides_dataset.rides_internal` 
+
+--This query will process 155.12 MB when run.
+
+
+SELECT 
+pu_location_id,
+do_location_id
+FROM `rides_dataset.rides_internal` 
+
+--This query will process 310.24 MB when run.
+~~~~
 
     BigQuery is a columnar database, and it only scans the specific columns requested in the query. Querying two columns (PULocationID, DOLocationID) requires reading more data than querying one column (PULocationID), leading to a higher estimated number of bytes processed. <<< 📌
 
@@ -128,9 +148,9 @@ where fare_amount = 0
     128,210
     546,578
     20,188,016
-    8,333 <<<
+    8,333 <<< 📌
 
-I find it surprising that out of 20M rides just 8k had been with fare zero
+I'm surprised that out of 20M rides just 8k had been with fare zero. Maybe need to check on this one.
 
 **Question 5. Partitioning and clustering**
 
@@ -141,12 +161,12 @@ What is the best strategy to make an optimized table in Big Query if your query 
     Cluster on tpep_dropoff_datetime Partition by VendorID
     Partition by tpep_dropoff_datetime and Partition by VendorID
 
-This asnwer is based on Google Cloud documentation:
+This answer is based on Google Cloud documentation:
 https://docs.cloud.google.com/bigquery/docs/clustered-tables#combine-clustered-partitioned-tables
 
-Partitioning and clustering seems to be the general rule? Basically, divide into segments first and then sort. In this case:
+Partitioning and clustering as rule of thumb. Basically, divide into segments first and then sort. In this case:
 
- - Partitioning by tpep_dropoff_datetime ensures BigQuery scans only the relevant date segments, significantly reducing data processed and improving query performance and cost efficiency.
+- Partitioning by tpep_dropoff_datetime ensures BigQuery scans only the relevant date segments, significantly reducing data processed and improving query performance and cost efficiency.
 - Clustering on VendorID : Within each date partition, clustering by vendor_id further organizes the data.
 
 ~~~~sql
