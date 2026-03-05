@@ -7,7 +7,7 @@ from io import BytesIO
 
 os.environ["DLT_CONFIG_DIR"] = "/home/carlos/.dlt"
 
-NUMERIC_COLUMNS = ["pulocationid", "dolocationid", "sr_flag"]
+#   NUMERIC_COLUMNS = ["pulocationid", "dolocationid", "sr_flag"]
 
 @dlt.resource(
     name="fhv_taxis",
@@ -33,13 +33,18 @@ def fhv_resource(months):
             ):
                 chunk.columns = [c.lower().strip() for c in chunk.columns]
 
-                # Keep schema stable across all chunks/files for parquet writer.
-                for col in NUMERIC_COLUMNS:
+                # Convert location IDs and sr_flag to STRING to avoid type conflicts
+                for col in ["pulocationid", "dolocationid", "sr_flag"]:
                     if col in chunk.columns:
-                        chunk[col] = (
-                            pd.to_numeric(chunk[col], errors="coerce")
-                            .astype("float64")
-                        )
+                        chunk[col] = chunk[col].astype(str)
+
+                # # Keep schema stable across all chunks/files for parquet writer.
+                # for col in NUMERIC_COLUMNS:
+                #     if col in chunk.columns:
+                #         chunk[col] = (
+                #             pd.to_numeric(chunk[col], errors="coerce")
+                #             .astype("float64")
+                #         )
 
                 yield chunk
 
@@ -59,7 +64,7 @@ if __name__ == "__main__":
         fhv_resource(months=range(1, 13)),
         loader_file_format="parquet",
         staging=filesystem(bucket_url="gs://dezc-485312"),
-    )
+        )
 
     print("✅ Load complete!")
     print(load_info)
