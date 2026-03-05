@@ -1,0 +1,12 @@
+.github/copilot-instructions.md
+.gitignore
+.vscode/settings.json
+w1_docker_terraform/pipeline/.python-version
+w1_docker_terraform/pipeline/README.md
+w1_docker_terraform/pipeline/data_exploration.ipynb
+w1_docker_terraform/pipeline/ingest_data.py
+w1_docker_terraform/pipeline/ingest_data_0.py
+w1_docker_terraform/pipeline/main.py
+w1_docker_terraform/pipeline/pyproject.toml
+w1_docker_terraform/pipeline/uv.lock
+w1_docker_terraform/w1_homework/README.md

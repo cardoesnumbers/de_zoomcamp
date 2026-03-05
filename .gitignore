@@ -265,3 +265,6 @@ w1_docker_terraform/pipeline/.env
 
 
 SECRET_GCP_CREDS
+
+.dlt/secrets.toml
+secrets.toml

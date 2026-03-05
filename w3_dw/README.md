@@ -164,7 +164,7 @@ What is the best strategy to make an optimized table in Big Query if your query 
 This answer is based on Google Cloud documentation:
 https://docs.cloud.google.com/bigquery/docs/clustered-tables#combine-clustered-partitioned-tables
 
-Partitioning and clustering as rule of thumb. Basically, divide into segments first and then sort. In this case:
+Partitioning and clustering as rule of thumb. Basically, divide into GCPsegments first and then sort. In this case:
 
 - Partitioning by tpep_dropoff_datetime ensures BigQuery scans only the relevant date segments, significantly reducing data processed and improving query performance and cost efficiency.
 - Clustering on VendorID : Within each date partition, clustering by vendor_id further organizes the data.
