@@ -36,11 +36,27 @@ Comments and homework for this module right [here](w2_kestra/README.md).
 
 Additionally, in this module I tested Github secrets built-in protection (**GitGuardian**) which sent a message soon after my secrets were exposed. Secrets were rotated, that is, new were created and exposed ones were revoked. Section showing the secret was also removed from compromised file. Old dead secret kept (for now?) in commit history.
 
+**Module 3: Data Warehousing**
+
++ Introduction to BigQuery
++ Partitioning, clustering, and best practices
++ Machine learning in BigQuery
+
+
+Comment and homework [here](w3_dw/README.md)
+
+
+**Module 4: Analytics Engineering** 
+
+
++ Analytics Engineering and Data Modeling
++ dbt (data build tool) with DuckDB & BigQuery
++ Testing, documentation, and deployment
+
+Comment and homework [here](w4_ae/README.md)
 
 ## Next up
 
-- Module 3: Data Warehousing (BigQuery, Partitioning, Machine learning in BigQuery)
-- Module 4: Analytics Engineering Data Modeling (dbt with DuckDB & BigQuery, testing, documentation, and deployment)
 - Module 5: Batch Processing (Spark, DataFrames and SQL, Internals of GroupBy and Joins)
 - Module 6: Streaming (Kafka Streams and KSQL, Schema management with Avro)
 - Final Project
