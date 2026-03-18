@@ -269,3 +269,11 @@ SECRET_GCP_CREDS
 .dlt/secrets.toml
 secrets.toml
 .bruin.yml
+logs/queries
+logs/runs
+logs/*.log
+*.py[cod]
+
+# Bruin
+.bruin.yml
+duckdb.db
