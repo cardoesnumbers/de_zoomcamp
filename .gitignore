@@ -277,3 +277,4 @@ logs/*.log
 # Bruin
 .bruin.yml
 duckdb.db
+trains.csv
