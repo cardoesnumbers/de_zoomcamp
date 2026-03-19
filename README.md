@@ -55,6 +55,15 @@ Comment and homework [here](w3_dw/README.md)
 
 Comment and homework [here](w4_ae/README.md)
 
+**Module 5: Data Platforms**
+
++ Building end-to-end data pipelines with Bruin
++ Data ingestion, transformation, and quality
++ Deployment to cloud (BigQuery)
+
+Comment and homework [here](w5_bruin/README.md)
+
+
 ## Next up
 
 - Module 5: Batch Processing (Spark, DataFrames and SQL, Internals of GroupBy and Joins)
