@@ -59,7 +59,7 @@ Comment and homework [here](w4_ae/README.md)
 
 + Building end-to-end data pipelines with Bruin
 + Data ingestion, transformation, and quality
-+ Deployment to cloud (BigQuery)
++ Deployment (to cloud with Big Query or locally with DuckDB)
 
 Comment and homework [here](w5_bruin/README.md)
 
