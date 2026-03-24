@@ -9,12 +9,9 @@ materialization:
   strategy: append
 
 columns:
-  - name: pickup_datetime
-    type: timestamp
-    description: "When the meter was engaged"
-  - name: dropoff_datetime
-    type: timestamp
-    description: "When the meter was disengaged"
+  - name: taxi_type
+    type: string
+    description: "yellow or green; timestamps are tpep_* vs lpep_* in raw files"
 @bruin"""
 
 import os
@@ -29,7 +26,7 @@ BASE_URL = "https://d37ci6vzurychx.cloudfront.net/trip-data/{taxi_type}_tripdata
 def materialize():
     start_date = os.environ["BRUIN_START_DATE"]
     end_date = os.environ["BRUIN_END_DATE"]
-    taxi_types = json.loads(os.environ["BRUIN_VARS"]).get("taxi_types", ["yellow"])
+    taxi_types = json.loads(os.environ["BRUIN_VARS"]).get("taxi_types", ["yellow", "green"])
 
     start = datetime.strptime(start_date, "%Y-%m-%d")
     end = datetime.strptime(end_date, "%Y-%m-%d")
@@ -46,6 +43,7 @@ def materialize():
             )
             try:
                 df = pd.read_parquet(url)
+                # Source Parquet has no taxi_type; tag from URL loop (not from file).
                 df["taxi_type"] = taxi_type
                 frames.append(df)
             except Exception:
@@ -54,6 +52,6 @@ def materialize():
             current += relativedelta(months=1)
 
     if not frames:
-        return pd.DataFrame(columns=["pickup_datetime", "dropoff_datetime"])
+        return pd.DataFrame()
     final_dataframe = pd.concat(frames, ignore_index=True)
     return final_dataframe

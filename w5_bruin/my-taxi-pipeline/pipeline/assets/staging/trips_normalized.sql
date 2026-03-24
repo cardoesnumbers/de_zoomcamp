@@ -19,14 +19,35 @@ columns:
       - name: not_null
 @bruin */
 
+-- Raw ingestion keeps TLC column names (yellow: tpep_*, green: lpep_*). Unify here.
 SELECT
-  CAST(t.tpep_pickup_datetime AS TIMESTAMP) AS pickup_datetime,
-  CAST(t.tpep_dropoff_datetime AS TIMESTAMP) AS dropoff_datetime,
-  CAST(t.PULocationID AS INTEGER) AS pickup_location_id,
-  CAST(t.DOLocationID AS INTEGER) AS dropoff_location_id,
+  COALESCE(
+    CAST(t.tpep_pickup_datetime AS TIMESTAMP),
+    CAST(t.lpep_pickup_datetime AS TIMESTAMP)
+  ) AS pickup_datetime,
+  COALESCE(
+    CAST(t.tpep_dropoff_datetime AS TIMESTAMP),
+    CAST(t.lpep_dropoff_datetime AS TIMESTAMP)
+  ) AS dropoff_datetime,
+  CAST(t.pu_location_id AS INTEGER) AS pickup_location_id,
+  CAST(t.do_location_id AS INTEGER) AS dropoff_location_id,
   CAST(t.payment_type AS INTEGER) AS payment_type,
   CAST(t.fare_amount AS DOUBLE) AS fare_amount,
-  t.taxi_type AS taxi_type
+  -- Backfill: append-only ingestion can leave NULL on older rows (added column later);
+  -- TLC files never carry this — yellow uses tpep_*, green uses lpep_*.
+  COALESCE(
+    t.taxi_type,
+    CASE
+      WHEN t.tpep_pickup_datetime IS NOT NULL THEN 'yellow'
+      WHEN t.lpep_pickup_datetime IS NOT NULL THEN 'green'
+    END
+  ) AS taxi_type
 FROM ingestion.trips AS t
-WHERE CAST(t.tpep_pickup_datetime AS TIMESTAMP) >= '{{ start_datetime }}'
-  AND CAST(t.tpep_pickup_datetime AS TIMESTAMP) < '{{ end_datetime }}'
+WHERE COALESCE(
+    CAST(t.tpep_pickup_datetime AS TIMESTAMP),
+    CAST(t.lpep_pickup_datetime AS TIMESTAMP)
+  ) >= '{{ start_datetime }}'
+  AND COALESCE(
+    CAST(t.tpep_pickup_datetime AS TIMESTAMP),
+    CAST(t.lpep_pickup_datetime AS TIMESTAMP)
+  ) < '{{ end_datetime }}'

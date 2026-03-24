@@ -1,6 +1,6 @@
 name: taxi_pipeline
 schedule: "monthly"
-start_date: "2022-01-01"
+start_date: "2025-11-01"
 default_connections:
   duckdb: duckdb-default
 variables:
@@ -8,4 +8,4 @@ variables:
     type: "array"
     items:
       type: "string"
-    default: ["yellow"]
+    default: ["yellow", "green"]

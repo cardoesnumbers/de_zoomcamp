@@ -2,16 +2,32 @@
 
 ## Module Comments and Homework
 
-**Tech**: [Bruin](https://getbruin.com/), [DuckDB](https://duckdb.org/)
+**Tech**: [Bruin](https://getbruin.com/), [DuckDB](https://duckdb.org/), [Cursor](https://cursor.com/)
 
-Just went through the Bruin playlist reviewing some of the features and capabilities Bruin has to offer. Very first impression is that it reminded me of dbt probably because of the work being yml-driven and the approach to seeds. I am taking the opportunity in this module to try out Cursor, MCP, and DuckDB. I am particularly intrested in duckdub as I grew quite curious about it from the dbt module. 
+Just went through the Bruin playlist reviewing some of the features and capabilities Bruin has to offer. Very first impression is that it reminded me of dbt probably because of the work being yml-driven and the approach to seeds. I am taking the opportunity in this module to try out Cursor, MCP, and DuckDB.  
 
-Ok, on to it. The initial setup had duckdb installed to run the module so I had a chance to do a quick check on it (this was with the UI and not the CLI). I thought it looked great, it felt light-weight despite all the features, and user friendly.  As I said after W4, I look forward to continue learning more about it.
+Ok, on to it. 
 
-Linked to duckdb, because the .db file was also created locally I had to play around with Git/Github as [there is a limit of 100MB](https://github.com/orgs/community/discussions/163795) when doing regular commits. At the end I used Git Large File Storage extension and everything seemed to work just fine. Also this was the first time I heard about it, so, great find.
+- The initial setup had duckdb installed to run with the module so I had a chance to do a quick check on it (almost entirely in the ui and only a few tests with cli). I thought it looked great, it felt light-weight despite all the features, and user friendly.  As I said after W4, I look forward to continue learning more about it.
 
-For more about LFS you can read [here](https://git-lfs.com/)
+- Linked to duckdb, because the .db file was also created locally I had to play around with Git/Github as [there is a limit of 100MB](https://github.com/orgs/community/discussions/163795) when doing regular commits. At the end, I used Git Large File Storage extension and everything seemed to work just fine. Also this was the first time I heard about LFS, so, great find.
 
+For more about LFS read [here](https://git-lfs.com/)
+
+- Working with Cursor was nice, particularly when generating the ingestion script which reminded me how much time I spent on that in W3. Code generation was amazing but also minimizes then chances of failing and learning from understanding (or at least trying to understand) what and why something is failing. I will probably use it in the next module though I am already quite comfortable with VS Code. Still, great to see suggestions like how to handle the pickup and dropoff column names in staging using COALESCE
+
+
+~~~sql
+SELECT
+  COALESCE(
+    CAST(t.tpep_pickup_datetime AS TIMESTAMP),
+    CAST(t.lpep_pickup_datetime AS TIMESTAMP)
+  ) AS pickup_datetime,
+  COALESCE(
+    CAST(t.tpep_dropoff_datetime AS TIMESTAMP),
+    CAST(t.lpep_dropoff_datetime AS TIMESTAMP)
+  ) AS dropoff_datetime,
+~~~
 
 
 
@@ -28,7 +44,7 @@ In a Bruin project, what are the required files/directories?
 - `.bruin.yml` and `pipeline/` with `pipeline.yml` and `assets/` ❗
 - `pipeline.yml` and `assets/` only ☑️
 
-**Comment**: I chose the third one based on the video lectures and class notes (02-Getting started > Project skeleton) but the correct answer is the last one. So, no .bruin.yml?
+**Comment**: I chose the third one based on the video lectures and class notes (02-Getting started > Project skeleton) but the correct answer is the last one. So, no .bruin.yml? This one was also interesting as I double checked with the chat/MCP and the answer was the third one as well and I assumed the MCP provided some context based on Bruins documentation. Then again MCP is new to me and maybe that's not how it works. 
 
 ### Question 2. Materialization Strategies
 
