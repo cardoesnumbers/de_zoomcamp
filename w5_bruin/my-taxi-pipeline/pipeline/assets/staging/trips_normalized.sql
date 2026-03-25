@@ -33,10 +33,8 @@ SELECT
   CAST(t.do_location_id AS INTEGER) AS dropoff_location_id,
   CAST(t.payment_type AS INTEGER) AS payment_type,
   CAST(t.fare_amount AS DOUBLE) AS fare_amount,
-  -- Backfill: append-only ingestion can leave NULL on older rows (added column later);
-  -- TLC files never carry this — yellow uses tpep_*, green uses lpep_*.
   COALESCE(
-    t.taxi_type,
+    t.taxi_type, -- TLC files never carry this — yellow uses tpep_*, green uses lpep_*.
     CASE
       WHEN t.tpep_pickup_datetime IS NOT NULL THEN 'yellow'
       WHEN t.lpep_pickup_datetime IS NOT NULL THEN 'green'
