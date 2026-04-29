@@ -277,3 +277,7 @@ logs/*.log
 # Bruin
 .bruin.yml
 duckdb.db
+
+# PySpark
+w6_batch/code/data/
+w6_batch/code/fhvhv/
