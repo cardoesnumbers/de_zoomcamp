@@ -1,21 +1,19 @@
 # Week 6: Batch/Spark
 
-This module covers how to use Spark or actually PySpark as part of our data engineering stack. I have used pandas before and while they are different tools there is a familiarity on how Spark or PySpark that makes me feel almost at home.
+This module covers how to use Spark or actually PySpark as part of our data engineering stack. For context, for the past month I have been working daily with Oracle SQL. I have done many EDA exercises using Pandas before that. Going into this module I felt optimistic this would be very easy as I remembered trying out Spark in Databricks. I ended up mixing SQL and Python code (e.g., commenting out using "--" instead of "#' often) which is not a huge deal but could be annoying after falling for that several times.
 
 
 ## Module comments
 
-- installing
-- reading csv vs reading parquet
-- lazy vs eager processes
-- workaround to finding the schemas using pandas when working with csv files!
-- clever using sets to identify the interception of columns, that is columns that appear in both the green and the yellow dataset
-  - set(df_green.columns) & set(df_yellow.columns)
-- similar to a simple clever approach with the tpep and lpep columns, just rename them
+- Installing Spark in my machine (Debian 12) appeared simpler than using Win.
+- Alexei's explaining some of the challenges of reading csv vs parquet or what lazy and eager processes was great. Other nice real world examples were the workaround to getting the schemas using Pandas when working with csv files as, unlike parquet files, csv do not carry this information by default; similarly, the clever use of sets to identify the interception of columns, that is columns that appear in both the green and the yellow dataset.
+- One final "hands-on" solution was the simple approach to dealing with columns having different names in two otherwise identical datasets (tpep and lpep columns), which was just to rename them, who would have thought!
   - df.withColumnRename('lpep_pickup_datetime', 'pickup_datetime') \
   - df.withColumnRename('lpep_dropoff_datetime', 'dropoff_datetime') and then the same for the green one
-- sql in spark. I have been working (as in actual work) a lot with SQL lately
-- connecting spark to bigquery
+- A common error I kept falling for was defining df = ... keeping the .show() at the end which caused errors down the line for instance when doing joins.
+- Connecting Spark to BigQuery was just overwhelming but that is maybe because I find it to cumbersome to deal with all the credentials part in any platform.
+
+Overall, I feel I learned a lot about Spark in this module but also got a better picture of how massive (and flexible) Spark is.
 
 
 ## Homework
@@ -119,9 +117,37 @@ What is the length of the longest trip in the dataset in hours?
 - 90.6 👈
 - 134.5
 
-Steps followed here:
-1. Created a new df with just pickup and dropoff times
-2. 
+**Steps followed here**:
+1. Imported pyspark.sql functions
+2. Created a new df with just pickup and dropoff times
+3. Converted both dropoff and pickup columns to seconds since epoch using [unix_timestamp](https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.functions.unix_timestamp.html) and substracted those two values to create a new column in the dataframe called 'time_length'.
+4. Converted the resulting seconds to hours.
+
+Final code snippet looks like this:
+
+~~~python
+df_time \
+    .select(
+        'trip_length', 
+        F.round(F.col('trip_length')/3600, 2).alias('trip_hours')) \
+    .orderBy(F.col('trip_length').desc()) \
+    .show(5)
+
+[Stage 109:>                                                        (0 + 4) / 4]
++-----------+----------+
+|trip_length|trip_hours|
++-----------+----------+
+|     326328|     90.65|
+|     277014|     76.95|
+|     274370|     76.21|
+|     249439|     69.29|
+|     241490|     67.08|
++-----------+----------+
+only showing top 5 rows
+~~~
+
+More examples of using unix_timestamp can be found [here](https://statistics.arabpsychology.com/pyspark-calculate-a-difference-between-two-dates/).
+
 
 ### Question 5: User Interface
 
@@ -129,10 +155,18 @@ Spark's User Interface which shows the application's dashboard runs on which loc
 
 - 80
 - 443
-- 4040
+- 4040 👈
 - 8080
 
+It runs in http://localhost:4040/jobs/
 
+~~~markdown
+Spark Jobs (?)
+User: carlos
+Total Uptime: 47,8 h
+Scheduling Mode: FIFO
+Completed Jobs: 67
+~~~
 
 ### Question 6: Least frequent pickup location zone
 
@@ -144,11 +178,55 @@ wget https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv
 
 Using the zone lookup data and the Yellow November 2025 data, what is the name of the LEAST frequent pickup location Zone?
 
-- Governor's Island/Ellis Island/Liberty Island
-- Arden Heights
+- Governor's Island/Ellis Island/Liberty Island 👈
+- Arden Heights 👈
 - Rikers Island
 - Jamaica Bay
 
 If multiple answers are correct, select any
 
+**Steps**:
+1. Read the zones file as df, the file already downloaded when doing the setup for PySpark.
+2. Join them, set truncate to False to get the full name of the zone
 
+~~~python
+#File already downloaded in the setup step
+url = "/home/carlos/Dokument/GitHub/de_zoomcamp/w6_batch/00_setup/taxi_zone_lookup.csv"
+zone_df = spark.read.option("header", "true").csv(url)
+~~~
+
+~~~python
+# name of the LEAST frequent pickup location ID just from the november data
+least_freq_pickup_zone = df.groupBy('PULocationID').count().orderBy('count')
+least_freq_pickup_zone.show(5, truncate = False)
+
++------------+-----+
+|PULocationID|count|
++------------+-----+
+|84          |1    |
+|105         |1    |
+|5           |1    |
+|187         |3    |
+|111         |4    |
++------------+-----+
+only showing top 5 rows
+~~~
+
+~~~python
+# joining with the zone dataframe to get the zone names
+df.join(zone_df, df.PULocationID == zone_df.LocationID, 'left') \
+.groupBy(['LocationID', 'Zone'])\
+.count().orderBy('count').show(5, truncate = False)
+
++----------+---------------------------------------------+-----+
+|LocationID|Zone                                         |count|
++----------+---------------------------------------------+-----+
+|105       |Governor's Island/Ellis Island/Liberty Island|1    |
+|84        |Eltingville/Annadale/Prince's Bay            |1    |
+|5         |Arden Heights                                |1    |
+|187       |Port Richmond                                |3    |
+|199       |Rikers Island                                |4    |
++----------+---------------------------------------------+-----+
+only showing top 5 rows
+
+~~~
