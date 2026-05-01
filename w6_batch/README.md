@@ -1,22 +1,24 @@
 # Week 6: Batch/Spark
 
-This module covers how to use Spark or actually PySpark as part of our data engineering stack. For context, for the past month I have been working daily with Oracle SQL. I have done many EDA exercises using Pandas before that. Going into this module I felt optimistic this would be very easy as I remembered trying out Spark in Databricks. I ended up mixing SQL and Python code (e.g., commenting out using "--" instead of "#' often) which is not a huge deal but could be annoying after falling for that several times.
+Overall a shorter module that gave me a better picture of how massive (and flexible) Spark is.
+
+This module covered Spark internals, how processes like group by or joins work and and overview of RDD. For the past month I have been working daily with Oracle SQL. Before that I used Pandas for EDA and actually got a first taste of Spark running some exercises in Databricks. All this got mixed in my head and I would start writing SQL queries by default commenting out code with "--" instead of "#" which is not a big deal but could get annoying done repeatedly. 
 
 
 ## Module comments
 
-- Installing Spark in my machine (Debian 12) appeared simpler than using Win.
-- Alexei's explaining some of the challenges of reading csv vs parquet or what lazy and eager processes was great. Other nice real world examples were the workaround to getting the schemas using Pandas when working with csv files as, unlike parquet files, csv do not carry this information by default; similarly, the clever use of sets to identify the interception of columns, that is columns that appear in both the green and the yellow dataset.
+- Alexei's explaining some of the challenges of reading csv vs parquet or what lazy and eager processes was great. Other nice real world examples were the workaround to getting the schemas using Pandas when reading csv files as, unlike parquet files, csv do not carry this information by default; similarly, what I thought was a clever use of sets to identify the interception of columns, that is columns that appear in both the green and the yellow dataset.
 - One final "hands-on" solution was the simple approach to dealing with columns having different names in two otherwise identical datasets (tpep and lpep columns), which was just to rename them, who would have thought!
   - df.withColumnRename('lpep_pickup_datetime', 'pickup_datetime') \
   - df.withColumnRename('lpep_dropoff_datetime', 'dropoff_datetime') and then the same for the green one
 - A common error I kept falling for was defining df = ... keeping the .show() at the end which caused errors down the line for instance when doing joins.
-- Connecting Spark to BigQuery was just overwhelming but that is maybe because I find it to cumbersome to deal with all the credentials part in any platform.
+- Connecting Spark to BigQuery was just overwhelming but that is maybe because I find it to cumbersome to deal with all the credentials part in any platform but felt tools used in previous modules like dbt and Bruin made this process easier.
 
-Overall, I feel I learned a lot about Spark in this module but also got a better picture of how massive (and flexible) Spark is.
 
 
 ## Homework
+
+As tradition, I indicate my answer with 👈 and compare with the actual answer from the cohort using ✅ if my answer was correct or ❗ if wrong.
 
 ### Question 1: Install Spark and PySpark
 
@@ -62,7 +64,16 @@ What is the average size of the Parquet (ending with .parquet extension) Files t
 - 75MB
 - 100MB
 
-Comments: 25MB, based on the source parque file from NYC website. 
+
+~~~python
+# reading the parquet file
+url = '/home/carlos/Dokument/GitHub/de_zoomcamp/w6_batch/code/data/yellow_tripdata_2025-11.parquet'
+
+df = spark.read.parquet(url)
+
+#repartitioning the dataframe to 4 partitions
+df = df.repartition(4)
+~~~
 
 ~~~bash
 (base) carlos@debian:~/Dokument/GitHub/de_zoomcamp/w6_batch/code/data/yellow$ ls -lh
@@ -83,7 +94,7 @@ Consider only trips that started on the 15th of November.
 
 - 62,610
 - 102,340
-- 162,604 👈
+- 162,604 👈✅
 - 225,768
 
 Tried two approaches for this one, using pyspark sql functions with between and  using built logical operators:
@@ -114,7 +125,7 @@ What is the length of the longest trip in the dataset in hours?
 
 - 22.7
 - 58.2
-- 90.6 👈
+- 90.6 👈✅
 - 134.5
 
 **Steps followed here**:
@@ -155,7 +166,7 @@ Spark's User Interface which shows the application's dashboard runs on which loc
 
 - 80
 - 443
-- 4040 👈
+- 4040 👈✅
 - 8080
 
 It runs in http://localhost:4040/jobs/
@@ -178,8 +189,8 @@ wget https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv
 
 Using the zone lookup data and the Yellow November 2025 data, what is the name of the LEAST frequent pickup location Zone?
 
-- Governor's Island/Ellis Island/Liberty Island 👈
-- Arden Heights 👈
+- Governor's Island/Ellis Island/Liberty Island 👈✅
+- Arden Heights 👈✅
 - Rikers Island
 - Jamaica Bay
 
