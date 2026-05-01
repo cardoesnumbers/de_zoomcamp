@@ -2,8 +2,7 @@
 
 Overall a shorter module that gave me a better picture of how massive (and flexible) Spark is.
 
-This module covered Spark internals, how processes like group by or joins work and and overview of RDD. For the past month I have been working daily with Oracle SQL. Before that I used Pandas for EDA and actually got a first taste of Spark running some exercises in Databricks. All this got mixed in my head and I would start writing SQL queries by default commenting out code with "--" instead of "#" which is not a big deal but could get annoying done repeatedly. 
-
+This module covered Spark internals; how processes like Group by or Joins work and we got an overview of RDD. From the module I get a reference of when to add Spark to my workflow: if I doing ETL on **huge** amounts of data, by the tera or even petabytes; data aggregation (e.g., group by), joins or deduplication, or incremental loads on billions of rows, or in other words, the work doesn't fit into memory and Pandas cannot help.
 
 ## Module comments
 
