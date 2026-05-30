@@ -1,0 +1,45 @@
+import json
+import dataclasses
+
+from dataclasses import dataclass
+
+
+@dataclass
+class TaxiRide:
+    PULocationID: int
+    DOLocationID: int
+    trip_distance: float
+    total_amount: float
+    tpep_pickup_datetime: int  # epoch milliseconds
+
+
+def ride_from_row(row):
+    return TaxiRide(
+        PULocationID=int(row['PULocationID']),
+        DOLocationID=int(row['DOLocationID']),
+        trip_distance=float(row['trip_distance']),
+        total_amount=float(row['total_amount']),
+        tpep_pickup_datetime=int(row['tpep_pickup_datetime'].timestamp() * 1000),
+    )
+
+
+def ride_serializer(ride):
+    ride_dict = dataclasses.asdict(ride)
+    ride_json = json.dumps(ride_dict).encode('utf-8')
+    return ride_json
+
+# The serializer converts the class to a dictionary using dataclasses.asdict 
+# Then converts the python object (dict) to a JSON string (using json.dumps()).
+# Finally, it encodes the JSON string as bytes (using .encode('utf-8')).
+
+
+
+def ride_deserializer(data):
+    json_str = data.decode('utf-8')
+    ride_dict = json.loads(json_str)
+    return TaxiRide(**ride_dict)
+
+# A deserializer converts raw data (bytes/strings) → Python objects.
+# In Kafka, deserializers are used in consumers to reconstruct objects from bytes.
+
+
