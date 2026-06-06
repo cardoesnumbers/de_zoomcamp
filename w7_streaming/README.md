@@ -45,7 +45,17 @@ After starting the postgres service we need to create a table to receive the dat
 
 Note: In this exercise we are working with a single consumer but it is possible (probably common) to have multiple consumers moving data to different locations, we would need different group-id.
 
-On Flink, it is presented as a platform that would allow us to preprocess some of the data before it is moved to x or y location and deals with eventuals breaks in connection. Flink is usually built in clusters that are always listening to Kafka streams. Flink takes care of the consumption part and again the producer remains as it is. To work with Flink we need to add it to the docker compose in two parts: a job manager and a task manager (what is actually doing the process)
+On Flink, it is presented as a platform that would allow us to preprocess some of the data before it is moved to x or y location and deals with eventuals breaks in connection. Flink is usually built in clusters that are always listening to Kafka streams. Flink takes care of the consumption part and again the producer remains as it is. To work with Flink we need to add it to the docker compose in two parts: a job manager (deciding to which task manager each job goes) and a task manager (what is actually doing the processes). 
 
-- Install psycopg2-binary
+The actual setup for flink is done via a flink-config (some config), a pyprojectflink.toml (dependencies), and a dockerfile (where everything comes together.
+
+After having added them to the docker compose we execute both of them. 
+
+~~~bash
+docker compose up jobmanager taskmanager
+~~~
+
+Before trying to configure any type of aggregation in Flink I need to cancel any ongoing job. For the aggregation I create a new table in pgadmin. 
+
+
 
