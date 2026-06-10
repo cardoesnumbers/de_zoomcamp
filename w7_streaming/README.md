@@ -2,32 +2,40 @@
 
 ## Module comments and observations
 
-This is the final module of the Data Engineering Zoomcamp and I am taking the chance to try out Zed IDE, let's see how it goes :)
+This is the final module of the Data Engineering Zoomcamp.
 
-Fast update: As of today (mid May 2026) Zed supports Jupyter kernels through its built-in REPL, notebook-style cells using # %% separators, inline outputs, plots, etc. which is great but i don't want to do that. So... Cursor it is again.
+Ingredients for this module:
+- Docker for Flink + adapters, Postgres/PgAdmin, Redpanda
+- Python, psycopg2
+- NYC Taxi Data
+- Cursor 
 
-In this module I are going to be using Pyarrow to read parquet files.Docker-compose will be used to setting up redpanda, the ports defined in the yaml are how the producers and consumers will interact with each other.
 
-After firing up DP, I create producers and consumers
-
-
-Once I loaded a sample (1000) of the yellow taxi data I use a row definition to create a class.
-
-Tip: To avoid having to call up (de)serializers on multiple cells, definitions for each one have been save on an py file named models which I will use in the exercise to call for all the needed imports and above-mentioned functions. 
-
-Why Kafka?
-Reliability and robustness to the topic (replication).
-Flexibility when it comes to the size/extent of the topics
-Scalability
-
-Concepts to keep in mind:
-- Data streaming: exchanging of data in "real time"
-- Producer: the one posting the information
-- Consumer: the one subscribed to the information being posted
-- Topic: A continous stream of events
-- Event: a data point at a certain timestamp, a collection of events go into a topic which in turn are read by the (subscribed) consumers. Each event contains a message.
+### Concepts to keep in mind
+- Data streaming: exchanging of data in "real time".
+- Kafka cluster: nodes/machines talking to each other in a network.
+- Producer: the one posting the information, it talks in terms of events or messages.
+- Consumer: the one subscribed to the information being posted.
+- Topic: A continous stream of events defined by user, key-values. A topic is stored in one node of a Kafka cluster.
+- Event/Msg: a data point at a certain timestamp, a collection of events go into a topic which in turn are read by the (subscribed) consumers. Each event contains a message.
 - Message: whats inside of the event, has three structures: key, value, timestamp.
+- Replication (factor): duplication a topic in +1 node. A leader node is defined here as well +1 node follower. Producers and consumers talk to the node leader. If node leader dies, the cluster adjusts and moves to node follower without much interruption in the work producer and consumer are doing. Follower becomes a leader and any other free nodes become follower, and so on.
 - Logs: How we store events in a topic
+
+The work at hand is to produce simulated real-live events using a producer, use Redpanda to simplify what Kafka would have done when making the data available to a consumer. Eventually moving the data to a database (Postgres). 
+
+### Why Redpanda?
+- Reliability and robustness to the topic (replication).
+- Flexibility when it comes to the size/extent of the topics
+- Scalability
+
+We worked with serializers and deserializers to convert data in a format that is compatible with streaming. 
+
+To avoid having to call up (de)serializers on multiple cells, definitions for each one have been save on an py file named models which I will use in the exercise to call for all the needed imports and above-mentioned functions. Like this:
+
+~~~python
+from models import ride_deserializer, TaxiRide
+~~~
 
 
 ## Creating the producer
@@ -41,9 +49,10 @@ Concepts to keep in mind:
 
 * these steps are automated with a **serializer**
 
-## Creating the consumer (local/db)
+## Creating the consumer 
 - (separate notebook but im guessing this doesn't mattered much)
 - define the consumer including server and topic name are the same as in the producer and the value **deserializer**. In Kafka, deserializers are used in consumers to reconstruct objects from bytes (created by the serializer)
+- psycopg2 to load data to Postgres
 
 **Quick summary on when to use each one:**
 
@@ -54,15 +63,10 @@ Concepts to keep in mind:
 | Example | json.dumps(obj).encode('utf-8') | Ride(**json.loads(data.decode('utf-8'))) |
 | Kafka Role | value_serializer in KafkaProducer | value_deserializer in KafkaConsumer |
 
-- db: psycopg2! 
 
-Kafka and Postgres speak different language, one bytes/json and the other pure SQL so psycopg2 works as receiver and interpreter via a python script.
+Kafka/Redpanda and Postgres speak different language, one bytes/json and the other pure SQL so psycopg2 works as receiver and interpreter via a python script.
 
-
-
-
-
-In this exercise I are using postgres, I am curious to know if duckdb would work as Ill. But for the sake of the exercise I will keep postgres. One small change is that I dont like to write sql queries in the command line so I added a pgadmin service to the docker compose file instead.
+In this exercise I am using postgres, I am curious to know if duckdb would work as Ill. But for the sake of the exercise I will keep postgres. One small change is that I dont like to write sql queries in the command line so I added a pgadmin service to the docker compose file instead.
 
 ~~~yaml
   pgadmin:
@@ -77,7 +81,7 @@ In this exercise I are using postgres, I am curious to know if duckdb would work
       - postgres
 ~~~
 
-After starting the postgres service I need to create a table to receive the data I are sending (rides). This table should have the same structure as my rides, in other words, this:
+After starting the postgres service I need to create a table to receive the data I am sending (rides). This table should have the same structure as my rides, in other words, this:
 
 ~~~python
 #creating one event exemple using this class
@@ -103,24 +107,25 @@ CREATE TABLE processed_events (
 ~~~
 
 
-Once created I need to make some adjustments in the consumer, the producer remains as it is. To keep things clean I made a copy of the consumer (consumer_db) which requires all the cells to be re-run from start. Once the setup is done I need to resend the events from the producer.
+Once created I need to make some adjustments in the consumer (new file), the producer remains as it is. Once the setup is done I need to resend the events from the producer.
 
-Note: In this exercise I are working with a single consumer but it is possible (probably common) to have multiple consumers moving data to different locations, I would need different group-id.
+Note: In this exercise I am working with a single consumer but it is possible (probably common) to have multiple consumers moving data to different locations, I would need different group-id.
 
-On Flink, Flink is presented as a platform that would allow us to preprocess some of the data before it is moved to x or y location and deals with eventuals breaks in connection. Flink is usually built in clusters that are always listening to Kafka streams. Flink takes care of the consumption part and again the producer remains as it is. To work with Flink I need to add it to the docker compose in two parts: 
+On to Flink. Flink is presented as a platform that would allow us to preprocess some of the data before it is moved to x or y location, Flink is also capable of dealing with common challenges like eventual breaks in connection. Flink is usually built in clusters that are always listening to the streams. Flink takes care of the consumption part and again the producer remains as it is. To work with Flink I need to add it to the docker compose in two parts: 
 
 - a job manager (deciding to which task manager each job goes) and, 
 - a task manager (what is actually doing the processes). 
 
-The actual setup for flink is done via a flink-config (some config), a pyprojectflink.toml (dependencies), and a dockerfile (where everything comes together.
+The actual setup for flink is done via a flink-config (some config), a pyprojectflink.toml (dependencies), and a dockerfile where everything comes together.
 
-After having added them to the docker compose I execute both of them. 
+After adding them to the docker compose I execute both of them. 
 
 ~~~bash
 docker compose up jobmanager taskmanager
 ~~~
 
-Before trying to configure any type of aggregation in Flink I need to cancel any ongoing job. For the aggregation I create a new table in pgadmin. 
+Reminder: Before trying to configure any type of aggregation in Flink I need to cancel any ongoing job. For the aggregation I create a new table in pgadmin. 
 
 
-
+### Additional notes
+- Check on Confluent cloud, video is 3 years old, is it still relevant?
