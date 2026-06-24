@@ -10,6 +10,8 @@ Ingredients for this module:
 - NYC Taxi Data
 - Cursor 
 
+Have to admit this module was quite daunting for the lack of a better word. I think the overall idea is simple enough, in streaming we work with a producer, one or multiple consumer and then considering with the possibility of storing and transforming the data somewhere. My struggle when working with streaming are the moving parts in the docker compose which I already reckon when looking at the homework. But practice makes comfortable I suppose. 
+
 
 ### Concepts to keep in mind
 - **Data streaming:** exchanging of data in "real time".
@@ -21,11 +23,11 @@ Ingredients for this module:
 - **Message:** whats inside of the event, has three structures: key, value, timestamp.
 - **Replication (factor):** duplication a topic in +1 node. A leader node is defined here as well +1 node follower. Producers and consumers talk to the node leader. If node leader dies, the cluster adjusts and moves to node follower without much interruption in the work producer and consumer are doing. Follower becomes a leader and any other free nodes become follower, and so on.
 - **Retention:** how long the data will be retain by Kafka, it deletes the message older than the retention. 
-- **Partitions:** what allows Kafka to stream, it is the numbe of parts we are dividing a topic. Partitions can be replicated across nodes meaning the consumer can speak with multiple nodes at the same time. But if we have 1 partition then only 1 consumer can read. If we have 2 partitions we could use 2 consumers, etc. If we have 2 partitions and 3 consumers only 2 consumers will work but the 3 could become active if any of the first 2 dies.
+- **Partitions:** what allows Kafka to stream, it is the number of parts in which we are dividing a topic. Partitions can be replicated across nodes meaning the consumer can speak with multiple nodes at the same time. But if we have 1 partition then only 1 consumer can read. If we have 2 partitions we could use 2 consumers, etc. If we have 2 partitions and 3 consumers only 2 consumers will work but the 3 could become active if any of the first 2 dies.
 - **Offset:** which message to consume. There is an offset attached to each message: 0, 1, 2, 3... this information is sent to Kakfa and K is able to recognized, based on the consumer group id, which messages have been consumed by which consumer. The details are stored in an internal K topic called __consumer_offset in something like <consumer-group-id, topic, partition, offset>.
 - **Auto.offset.reset (latest and earliest):** indicates to K how to react when a new consumer group id has been attached to it. Latest is the default meaning if a new consumer is attached I can only read from that latest msg onwards and not the messages from the start of the topic (earliest).
 - **Akc-all:** defines the behavior of the producer after it has fired a msg. 0 means it doesnt care if the node it is sending the msg to has actually written to the node. 1 means the msg has to be written into the node, after that it returns a success into the producer. All means both leader node and follower nodes needs to have written into both logs and until then will the producers get a success message.
-- **Logs:** How we store events in a topic
+- **Logs:** How we store events in a topic.
 
 The work at hand is to produce simulated real-live events using a producer, use Redpanda to simplify what Kafka would have done when making the data available to a consumer. Eventually moving the data to a database (Postgres). 
 
@@ -46,7 +48,7 @@ We worked with serializers and deserializers to convert data in a format that is
 | Example | json.dumps(obj).encode('utf-8') | Ride(**json.loads(data.decode('utf-8'))) |
 | Kafka Role | value_serializer in KafkaProducer | value_deserializer in KafkaConsumer |
 
-To avoid having to call up (de)serializers on multiple cells, definitions for each one have been save on an py file named models which I will use in the exercise to call for all the needed imports and above-mentioned functions. Like this:
+To avoid having to call up (de)serializers on multiple cells, definitions for each one have been saved on an py file named models which I will use in the exercise to call for all the needed imports and above-mentioned functions. Like this:
 
 ~~~python
 from models import ride_deserializer, TaxiRide
@@ -114,12 +116,14 @@ CREATE TABLE processed_events (
 
 Once created I needed to make some adjustments in the consumer (new file), the producer remains as it is. Once the setup is done I need to resend the events from the producer.
 
-On to Flink. Flink is as a platform that would allow us to preprocess some of the data (vs storaging and processing done by Kafka/Redpanda) before it is moved to x or y location, Flink is also capable of dealing with common challenges like eventual breaks in connection. Flink is usually built in clusters that are always listening to the streams. Flink takes care of the consumption part and again the producer remains as it is. To work with Flink I need to add it to the docker compose in two parts: 
+## On to Flink
+
+Flink is as a platform that allows the preprocessing of data (vs storaging and processing done by Kafka/Redpanda) before it is moved to x or y location, Flink is also capable of dealing with common challenges like eventual breaks in connection. Flink is usually built in clusters that are always listening to the streams. Flink takes care of the consumption part and again the producer remains as it is. To work with Flink I need to add it to the docker compose in two parts: 
 
 - a job manager (deciding to which task manager each job goes) and, 
 - a task manager (what is actually doing the processes). 
 
-The actual setup for flink is done via a flink-config (some config), a pyprojectflink.toml (dependencies), and a dockerfile where everything comes together.
+The actual setup for flink is done via a flink-config (some config), a pyprojectflink.toml (dependencies), and a dedicated dockerfile where everything comes together. In this docker file we add the connector libraries we are going to be using in the exercise (e.g., postgres, etc.)
 
 After adding them to the docker compose I execute both of them. 
 
@@ -128,6 +132,190 @@ docker compose up jobmanager taskmanager
 ~~~
 
 Reminder: Before trying to configure any type of aggregation in Flink I need to cancel any ongoing job. For the aggregation I create a new table in pgadmin. 
+
+
+
+## Homework
+
+
+In this homework, we'll practice streaming with Kafka (Redpanda) and PyFlink.
+
+We use Redpanda, a drop-in replacement for Kafka. It implements the same
+protocol, so any Kafka client library works with it unchanged.
+
+For this homework we will be using Green Taxi Trip data from October 2025:
+
+- [green_tripdata_2025-10.parquet](https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2025-10.parquet)
+
+
+
+## Question 1. Redpanda version
+
+Run `rpk version` inside the Redpanda container:
+
+```bash
+docker exec -it workshop-redpanda-1 rpk version
+```
+
+What version of Redpanda are you running?
+
+
+## Question 2. Sending data to Redpanda
+
+Create a topic called `green-trips`:
+
+```bash
+docker exec -it workshop-redpanda-1 rpk topic create green-trips
+```
+
+Now write a producer to send the green taxi data to this topic.
+
+Read the parquet file and keep only these columns:
+
+- `lpep_pickup_datetime`
+- `lpep_dropoff_datetime`
+- `PULocationID`
+- `DOLocationID`
+- `passenger_count`
+- `trip_distance`
+- `tip_amount`
+- `total_amount`
+
+Convert each row to a dictionary and send it to the `green-trips` topic.
+You'll need to handle the datetime columns - convert them to strings
+before serializing to JSON.
+
+Measure the time it takes to send the entire dataset and flush:
+
+```python
+from time import time
+
+t0 = time()
+
+# send all rows ...
+
+producer.flush()
+
+t1 = time()
+print(f'took {(t1 - t0):.2f} seconds')
+```
+
+How long did it take to send the data?
+
+- 10 seconds
+- 60 seconds
+- 120 seconds
+- 300 seconds
+
+
+## Question 3. Consumer - trip distance
+
+Write a Kafka consumer that reads all messages from the `green-trips` topic
+(set `auto_offset_reset='earliest'`).
+
+Count how many trips have a `trip_distance` greater than 5.0 kilometers.
+
+How many trips have `trip_distance` > 5?
+
+- 6506
+- 7506
+- 8506
+- 9506
+
+
+## Part 2: PyFlink (Questions 4-6)
+
+For the PyFlink questions, you'll adapt the workshop code to work with
+the green taxi data. The key differences from the workshop:
+
+- Topic name: `green-trips` (instead of `rides`)
+- Datetime columns use `lpep_` prefix (instead of `tpep_`)
+- You'll need to handle timestamps as strings (not epoch milliseconds)
+
+You can convert string timestamps to Flink timestamps in your source DDL:
+
+```sql
+lpep_pickup_datetime VARCHAR,
+event_timestamp AS TO_TIMESTAMP(lpep_pickup_datetime, 'yyyy-MM-dd HH:mm:ss'),
+WATERMARK FOR event_timestamp AS event_timestamp - INTERVAL '5' SECOND
+```
+
+Before running the Flink jobs, create the necessary PostgreSQL tables
+for your results.
+
+Important notes for the Flink jobs:
+
+- Place your job files in `workshop/src/job/` - this directory is
+  mounted into the Flink containers at `/opt/src/job/`
+- Submit jobs with:
+  `docker exec -it workshop-jobmanager-1 flink run -py /opt/src/job/your_job.py`
+- The `green-trips` topic has 1 partition, so set parallelism to 1
+  in your Flink jobs (`env.set_parallelism(1)`). With higher parallelism,
+  idle consumer subtasks prevent the watermark from advancing.
+- Flink streaming jobs run continuously. Let the job run for a minute
+  or two until results appear in PostgreSQL, then query the results.
+  You can cancel the job from the Flink UI at http://localhost:8081
+- If you sent data to the topic multiple times, delete and recreate
+  the topic to avoid duplicates:
+  `docker exec -it workshop-redpanda-1 rpk topic delete green-trips`
+
+
+## Question 4. Tumbling window - pickup location
+
+Create a Flink job that reads from `green-trips` and uses a 5-minute
+tumbling window to count trips per `PULocationID`.
+
+Write the results to a PostgreSQL table with columns:
+`window_start`, `PULocationID`, `num_trips`.
+
+After the job processes all data, query the results:
+
+```sql
+SELECT PULocationID, num_trips
+FROM <your_table>
+ORDER BY num_trips DESC
+LIMIT 3;
+```
+
+Which `PULocationID` had the most trips in a single 5-minute window?
+
+- 42
+- 74
+- 75
+- 166
+
+
+## Question 5. Session window - longest streak
+
+Create another Flink job that uses a session window with a 5-minute gap
+on `PULocationID`, using `lpep_pickup_datetime` as the event time
+with a 5-second watermark tolerance.
+
+A session window groups events that arrive within 5 minutes of each other.
+When there's a gap of more than 5 minutes, the window closes.
+
+Write the results to a PostgreSQL table and find the `PULocationID`
+with the longest session (most trips in a single session).
+
+How many trips were in the longest session?
+
+- 12
+- 31
+- 51
+- 81
+
+
+## Question 6. Tumbling window - largest tip
+
+Create a Flink job that uses a 1-hour tumbling window to compute the
+total `tip_amount` per hour (across all locations).
+
+Which hour had the highest total tip amount?
+
+- 2025-10-01 18:00:00
+- 2025-10-16 18:00:00
+- 2025-10-22 08:00:00
+- 2025-10-30 16:00:00
 
 
 ### Additional notes
