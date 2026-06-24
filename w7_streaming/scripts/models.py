@@ -11,6 +11,7 @@ class TaxiRide:
     trip_distance: float
     total_amount: float
     tpep_pickup_datetime: int  # epoch milliseconds
+    
 
 
 def ride_from_row(row):

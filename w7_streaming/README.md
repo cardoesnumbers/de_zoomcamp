@@ -139,7 +139,7 @@ Reminder: Before trying to configure any type of aggregation in Flink I need to 
 
 
 In this homework, we'll practice streaming with Kafka (Redpanda) and PyFlink.
-
+Testing las nuevas letras
 We use Redpanda, a drop-in replacement for Kafka. It implements the same
 protocol, so any Kafka client library works with it unchanged.
 
@@ -167,6 +167,19 @@ Create a topic called `green-trips`:
 ```bash
 docker exec -it workshop-redpanda-1 rpk topic create green-trips
 ```
+Results in:
+
+~~~bash
+(base) carlos@debian: ... docker exec -it w7_streaming-redpanda-1 rpk version
+rpk version: v25.3.9
+Git ref:     836b4a36ef6d5121edbb1e68f0f673c2a8a244e2
+Build date:  2026 Feb 26 07 48 21 Thu
+OS/Arch:     linux/amd64
+Go version:  go1.24.3
+
+Redpanda Cluster
+  node-1  v25.3.9 - 836b4a36ef6d5121edbb1e68f0f673c2a8a244e2
+~~~
 
 Now write a producer to send the green taxi data to this topic.
 
