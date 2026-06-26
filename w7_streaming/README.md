@@ -4,7 +4,7 @@
 
 This is the final module of the Data Engineering Zoomcamp.
 
-Ingredients for this module:
+Ingredients:
 - Docker for Flink + adapters, Postgres/PgAdmin, Redpanda
 - Python, psycopg2
 - NYC Taxi Data
@@ -29,7 +29,7 @@ Have to admit this module was quite daunting for the lack of a better word. I th
 - **Akc-all:** defines the behavior of the producer after it has fired a msg. 0 means it doesnt care if the node it is sending the msg to has actually written to the node. 1 means the msg has to be written into the node, after that it returns a success into the producer. All means both leader node and follower nodes needs to have written into both logs and until then will the producers get a success message.
 - **Logs:** How we store events in a topic.
 
-The work at hand is to produce simulated real-live events using a producer, use Redpanda to simplify what Kafka would have done when making the data available to a consumer. Eventually moving the data to a database (Postgres). 
+The work at hand is to produce simulated real-live events using a producer, use Redpanda to simplify what Kafka would have done when making the data available to a consumer. Use Flink to do some group by preprocessing on the rides. Moving the data to a database (Postgres). 
 
 ### Why Kakfa/Redpanda?
 - Reliability and robustness to the topic (replication).
@@ -72,9 +72,9 @@ from models import ride_deserializer, TaxiRide
 - psycopg2 to load data to Postgres
 
 
-Kafka/Redpanda and Postgres speak different language, one bytes/json and the other pure SQL so psycopg2 works as receiver and interpreter via a python script.
+Kafka/Redpanda and Postgres speak different languages, one bytes/json and the other pure SQL so psycopg2 works as receiver and interpreter via a python script.
 
-In this exercise I am using postgres, I am curious to know if duckdb would work as Ill. But for the sake of the exercise I will keep postgres. One small change is that I dont like to write sql queries in the command line so I added a pgadmin service to the docker compose file instead.
+In this exercise I am using Postgres, I am curious to know if duckdb would work as well? But for the sake of the exercise I will keep Postgres. One small change is that I dont like to write sql queries in the command line so I added a pgadmin service to the docker compose file instead.
 
 ~~~yaml
   pgadmin:
@@ -89,7 +89,7 @@ In this exercise I am using postgres, I am curious to know if duckdb would work 
       - postgres
 ~~~
 
-After starting the postgres service I need to create a table to receive the data I am sending (rides). This table should have the same structure as my rides, in other words, this:
+After starting the Postgres service I need to create a table to receive the data I am sending (rides). This table should have the same structure as my rides, in other words, this:
 
 ~~~python
 #creating one event exemple using this class
@@ -114,16 +114,19 @@ CREATE TABLE processed_events (
 );
 ~~~
 
-Once created I needed to make some adjustments in the consumer (new file), the producer remains as it is. Once the setup is done I need to resend the events from the producer.
+Once created I needed to make some adjustments in the consumer (new consumer file), the producer remains as it is. Once the setup is done I need to resend the events from the producer.
 
-## On to Flink
+## Flink
 
-Flink is as a platform that allows the preprocessing of data (vs storaging and processing done by Kafka/Redpanda) before it is moved to x or y location, Flink is also capable of dealing with common challenges like eventual breaks in connection. Flink is usually built in clusters that are always listening to the streams. Flink takes care of the consumption part and again the producer remains as it is. To work with Flink I need to add it to the docker compose in two parts: 
+Flink is as a platform that would allow us to preprocess some of the data (vs storaging and processing done by Kafka/Redpanda) before it is moved to x or y location, Flink is also capable of dealing with common challenges like eventual breaks in connection. Flink is usually built in clusters that are always listening to the streams. Flink takes care of the consumption part and again the producer remains as it is. To work with Flink I need to add it to the docker compose in two parts: 
 
 - a job manager (deciding to which task manager each job goes) and, 
 - a task manager (what is actually doing the processes). 
 
-The actual setup for flink is done via a flink-config (some config), a pyprojectflink.toml (dependencies), and a dedicated dockerfile where everything comes together. In this docker file we add the connector libraries we are going to be using in the exercise (e.g., postgres, etc.)
+The actual setup for flink is done via:
+- a flink-config (some config), 
+- a pyprojectflink.toml (dependencies), and 
+- a dockerfile where everything comes together.
 
 After adding them to the docker compose I execute both of them. 
 
@@ -131,204 +134,7 @@ After adding them to the docker compose I execute both of them.
 docker compose up jobmanager taskmanager
 ~~~
 
-Reminder: Before trying to configure any type of aggregation in Flink I need to cancel any ongoing job. For the aggregation I create a new table in pgadmin. 
-
-
-
-## Homework
-
-
-In this homework, we'll practice streaming with Kafka (Redpanda) and PyFlink.
-Testing las nuevas letras
-We use Redpanda, a drop-in replacement for Kafka. It implements the same
-protocol, so any Kafka client library works with it unchanged.
-
-For this homework we will be using Green Taxi Trip data from October 2025:
-
-- [green_tripdata_2025-10.parquet](https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2025-10.parquet)
-
-
-
-## Question 1. Redpanda version
-
-Run `rpk version` inside the Redpanda container:
-
-```bash
-docker exec -it workshop-redpanda-1 rpk version
-```
-
-What version of Redpanda are you running?
-
-
-## Question 2. Sending data to Redpanda
-
-Create a topic called `green-trips`:
-
-```bash
-docker exec -it workshop-redpanda-1 rpk topic create green-trips
-```
-Results in:
-
-~~~bash
-(base) carlos@debian: ... docker exec -it w7_streaming-redpanda-1 rpk version
-rpk version: v25.3.9
-Git ref:     836b4a36ef6d5121edbb1e68f0f673c2a8a244e2
-Build date:  2026 Feb 26 07 48 21 Thu
-OS/Arch:     linux/amd64
-Go version:  go1.24.3
-
-Redpanda Cluster
-  node-1  v25.3.9 - 836b4a36ef6d5121edbb1e68f0f673c2a8a244e2
-~~~
-
-Now write a producer to send the green taxi data to this topic.
-
-Read the parquet file and keep only these columns:
-
-- `lpep_pickup_datetime`
-- `lpep_dropoff_datetime`
-- `PULocationID`
-- `DOLocationID`
-- `passenger_count`
-- `trip_distance`
-- `tip_amount`
-- `total_amount`
-
-Convert each row to a dictionary and send it to the `green-trips` topic.
-You'll need to handle the datetime columns - convert them to strings
-before serializing to JSON.
-
-Measure the time it takes to send the entire dataset and flush:
-
-```python
-from time import time
-
-t0 = time()
-
-# send all rows ...
-
-producer.flush()
-
-t1 = time()
-print(f'took {(t1 - t0):.2f} seconds')
-```
-
-How long did it take to send the data?
-
-- 10 seconds
-- 60 seconds
-- 120 seconds
-- 300 seconds
-
-
-## Question 3. Consumer - trip distance
-
-Write a Kafka consumer that reads all messages from the `green-trips` topic
-(set `auto_offset_reset='earliest'`).
-
-Count how many trips have a `trip_distance` greater than 5.0 kilometers.
-
-How many trips have `trip_distance` > 5?
-
-- 6506
-- 7506
-- 8506
-- 9506
-
-
-## Part 2: PyFlink (Questions 4-6)
-
-For the PyFlink questions, you'll adapt the workshop code to work with
-the green taxi data. The key differences from the workshop:
-
-- Topic name: `green-trips` (instead of `rides`)
-- Datetime columns use `lpep_` prefix (instead of `tpep_`)
-- You'll need to handle timestamps as strings (not epoch milliseconds)
-
-You can convert string timestamps to Flink timestamps in your source DDL:
-
-```sql
-lpep_pickup_datetime VARCHAR,
-event_timestamp AS TO_TIMESTAMP(lpep_pickup_datetime, 'yyyy-MM-dd HH:mm:ss'),
-WATERMARK FOR event_timestamp AS event_timestamp - INTERVAL '5' SECOND
-```
-
-Before running the Flink jobs, create the necessary PostgreSQL tables
-for your results.
-
-Important notes for the Flink jobs:
-
-- Place your job files in `workshop/src/job/` - this directory is
-  mounted into the Flink containers at `/opt/src/job/`
-- Submit jobs with:
-  `docker exec -it workshop-jobmanager-1 flink run -py /opt/src/job/your_job.py`
-- The `green-trips` topic has 1 partition, so set parallelism to 1
-  in your Flink jobs (`env.set_parallelism(1)`). With higher parallelism,
-  idle consumer subtasks prevent the watermark from advancing.
-- Flink streaming jobs run continuously. Let the job run for a minute
-  or two until results appear in PostgreSQL, then query the results.
-  You can cancel the job from the Flink UI at http://localhost:8081
-- If you sent data to the topic multiple times, delete and recreate
-  the topic to avoid duplicates:
-  `docker exec -it workshop-redpanda-1 rpk topic delete green-trips`
-
-
-## Question 4. Tumbling window - pickup location
-
-Create a Flink job that reads from `green-trips` and uses a 5-minute
-tumbling window to count trips per `PULocationID`.
-
-Write the results to a PostgreSQL table with columns:
-`window_start`, `PULocationID`, `num_trips`.
-
-After the job processes all data, query the results:
-
-```sql
-SELECT PULocationID, num_trips
-FROM <your_table>
-ORDER BY num_trips DESC
-LIMIT 3;
-```
-
-Which `PULocationID` had the most trips in a single 5-minute window?
-
-- 42
-- 74
-- 75
-- 166
-
-
-## Question 5. Session window - longest streak
-
-Create another Flink job that uses a session window with a 5-minute gap
-on `PULocationID`, using `lpep_pickup_datetime` as the event time
-with a 5-second watermark tolerance.
-
-A session window groups events that arrive within 5 minutes of each other.
-When there's a gap of more than 5 minutes, the window closes.
-
-Write the results to a PostgreSQL table and find the `PULocationID`
-with the longest session (most trips in a single session).
-
-How many trips were in the longest session?
-
-- 12
-- 31
-- 51
-- 81
-
-
-## Question 6. Tumbling window - largest tip
-
-Create a Flink job that uses a 1-hour tumbling window to compute the
-total `tip_amount` per hour (across all locations).
-
-Which hour had the highest total tip amount?
-
-- 2025-10-01 18:00:00
-- 2025-10-16 18:00:00
-- 2025-10-22 08:00:00
-- 2025-10-30 16:00:00
+**Reminder:** Before trying to configure any type of aggregation in Flink I need to cancel any ongoing jobs. For the aggregation I create a new table in pgadmin.
 
 
 ### Additional notes

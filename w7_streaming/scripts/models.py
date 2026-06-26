@@ -4,7 +4,7 @@ import dataclasses
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass #yellow taxi and part of the workshop
 class TaxiRide:
     PULocationID: int
     DOLocationID: int
@@ -21,7 +21,7 @@ def ride_from_row(row):
         tpep_pickup_datetime=int(row['tpep_pickup_datetime'].timestamp() * 1000),
     )
 
-@dataclass
+@dataclass #homework 
 class GreenTaxiRide:
     lpep_pickup_datetime: str
     lpep_dropoff_datetime: str
@@ -42,8 +42,9 @@ def ride_from_green_row(row):
         trip_distance=float(row['trip_distance']),
         tip_amount=float(row['tip_amount']),
         total_amount=float(row['total_amount']),
+    )
 
-def ride_serializer(ride):
+def ride_serializer(ride): 
     ride_dict = dataclasses.asdict(ride)
     ride_json = json.dumps(ride_dict).encode('utf-8')
     return ride_json
@@ -51,6 +52,7 @@ def ride_serializer(ride):
 # The serializer converts the class to a dictionary using dataclasses.asdict 
 # Then converts the python object (dict) to a JSON string (using json.dumps()).
 # Finally, it encodes the JSON string as bytes (using .encode('utf-8')).
+# The serializer can be used for both the workshop and the homework, as it works for both TaxiRide and GreenTaxiRide classes.
 
 
 
