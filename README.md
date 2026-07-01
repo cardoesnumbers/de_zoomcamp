@@ -64,8 +64,21 @@ Comment and homework [here](w4_ae/README.md)
 Comment and homework [here](w5_bruin/README.md)
 
 
+**Module 5: Batch Processing**
++ Introduction to Apache Spark
++ DataFrames and SQL
++ Internals of GroupBy and Joins
+
+Comment and homework [here](w6_batch/README.md)
+
 ## Next up
 
-- Module 5: Batch Processing (Spark, DataFrames and SQL, Internals of GroupBy and Joins)
-- Module 6: Streaming (Kafka Streams and KSQL, Schema management with Avro)
+**Module 6: Streaming** 
++ Kafka Theory
++ Intro to Redpanda
++ Build a pipeline with Redpanda, Python, Flink, PostgreSQL
+
+Comment and homework [here](w7_streaming/README.md)
+
+
 - Final Project
