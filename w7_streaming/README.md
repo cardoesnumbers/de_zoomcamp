@@ -210,18 +210,18 @@ print(f'took {(t1 - t0):.2f} seconds')
 
 How long did it take to send the data?
 
-- 10 seconds
+- 10 seconds 👈 
 - 60 seconds
 - 120 seconds
 - 300 seconds
 
-None of the above but might be due to changing machines to one with less RAM?
+The result is closer to 17 seconds after removing the time.sleep(0.01) used in the workshop.
 
 ~~~bash
 ...
 Sent: GreenTaxiRide(lpep_pickup_datetime='2025-10-31 23:45:00', lpep_dropoff_datetime='2025-11-01 00:08:00', PULocationID=255, DOLocationID=25, passenger_count=0, trip_distance=4.2, tip_amount=4.86, total_amount=37.29)
 Sent: GreenTaxiRide(lpep_pickup_datetime='2025-10-31 23:23:00', lpep_dropoff_datetime='2025-10-31 23:37:00', PULocationID=195, DOLocationID=33, passenger_count=0, trip_distance=3.0, tip_amount=0.0, total_amount=19.6)
-Data exchange took 570.70 seconds
+Data exchange took 17.22 seconds
 ~~~
 
 ## Question 3. Consumer - trip distance
@@ -235,8 +235,30 @@ How many trips have `trip_distance` > 5?
 
 - 6506
 - 7506
-- 8506
+- 8506 👈
 - 9506
+
+It is possible to write this directly into the consumer setup but first we didn't go through it in the workshop and when researching on it I thought it was just too complicated. Instead I created a new table in postgres (via pgadmin4) where I sent all the green rides and then query the table. So using: psycopg2, and 
+
+~~~python
+for message in consumer:
+    ride = message.value
+    cur.execute(
+        """INSERT INTO green_taxis
+           (lpep_pickup_datetime, lpep_dropoff_datetime, PULocationID, DOLocationID, passenger_count, trip_distance, tip_amount, total_amount)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+        (ride.lpep_pickup_datetime, ride.lpep_dropoff_datetime, ride.PULocationID, ride.DOLocationID,
+         ride.passenger_count, ride.trip_distance, ride.tip_amount, ride.total_amount)
+~~~
+
+and then
+
+~~~sql
+--trip distance > 5 km
+select count (*)
+from green_taxis
+where trip_distance > 5;
+~~~
 
 
 ## Part 2: PyFlink (Questions 4-6)

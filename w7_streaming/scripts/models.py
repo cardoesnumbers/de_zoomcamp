@@ -4,7 +4,7 @@ import dataclasses
 from dataclasses import dataclass
 
 
-@dataclass #yellow taxi and part of the workshop
+@dataclass #yellow taxi 
 class TaxiRide:
     PULocationID: int
     DOLocationID: int
@@ -32,7 +32,7 @@ class GreenTaxiRide:
     tip_amount: float
     total_amount: float
     
-def ride_from_green_row(row):
+def green_ride_from_row(row):
     return GreenTaxiRide(
         lpep_pickup_datetime=str(row['lpep_pickup_datetime']),
         lpep_dropoff_datetime=str(row['lpep_dropoff_datetime']),
