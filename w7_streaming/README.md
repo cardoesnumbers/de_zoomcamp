@@ -295,7 +295,7 @@ Important notes for the Flink jobs:
   You can cancel the job from the Flink UI at http://localhost:8081
 - If you sent data to the topic multiple times, delete and recreate
   the topic to avoid duplicates:
-  `docker exec -it workshop-redpanda-1 rpk topic delete green-trips`
+  `docker exec -it w7_streaming-redpanda-1 rpk topic delete g_rides`
 
 
 ## Question 4. Tumbling window - pickup location
