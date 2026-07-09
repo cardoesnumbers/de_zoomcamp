@@ -318,9 +318,22 @@ LIMIT 3;
 Which `PULocationID` had the most trips in a single 5-minute window?
 
 - 42
-- 74
+- 74 👈
 - 75
 - 166
+
+This one question took a lot of time as I am on vacation and I had some trouble setting up the source nad sink tables mainly because what appears to be some incongruencies with the date column format.
+
+Saving the postgres table here for future reference
+
+~~~sql
+create table agg_green_rides (
+    window_start TIMESTAMP,
+    pulocationid INT,
+    num_trips BIGINT,
+    PRIMARY KEY(window_start, pulocationid)
+);
+~~~
 
 
 ## Question 5. Session window - longest streak

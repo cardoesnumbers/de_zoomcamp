@@ -8,14 +8,15 @@ from pyflink.datastream import StreamExecutionEnvironment
 from pyflink.table import EnvironmentSettings, StreamTableEnvironment
 
 
-def create_green_source_k(t_env):
-    table_name = "green_taxis"
+def green_source_k(t_env):
+    table_name = "green_source"
+    t_env.execute_sql(f"DROP TABLE IF EXISTS {table_name}")
     source_ddl = f"""
         CREATE TABLE {table_name} (
-            lpep_pickup_datetime STRING,
+            lpep_pickup_datetime VARCHAR,
             PULocationID INTEGER,
-            event_timestamp AS TO_TIMESTAMP(lpep_pickup_datetime, 'yyyy-MM-dd HH:mm:ss'),
-            WATERMARK for event_timestamp as event_timestamp
+            event_timestamp AS TO_TIMESTAMP_LTZ(lpep_pickup_datetime, 'yyyy-MM-dd HH:mm:ss'),
+            WATERMARK FOR event_timestamp AS event_timestamp - INTERVAL '5' SECOND
         ) WITH (
             'connector' = 'kafka',
             'properties.bootstrap.servers' = 'redpanda:29092',
@@ -29,12 +30,13 @@ def create_green_source_k(t_env):
     return table_name
 
 
-def create_green_aggregated_sink(t_env): #this is where the aggregation lands
-    table_name = 'agg_green_pu'
+def green_aggregated_sink(t_env): #this is where the aggregation lands
+    table_name = 'agg_green_rides'
+    t_env.execute_sql(f"DROP TABLE IF EXISTS {table_name}")
     sink_ddl = f"""
         CREATE TABLE {table_name} (
             window_start TIMESTAMP(3),
-            PULocationID INTEGER,
+            PULocationID INT,
             num_trips BIGINT,
             PRIMARY KEY (window_start, PULocationID) NOT ENFORCED
         ) WITH (
@@ -59,8 +61,8 @@ def log_aggregation():
     t_env = StreamTableEnvironment.create(env, environment_settings=settings)
 
     try:
-        source_table = create_green_source_k(t_env)
-        aggregated_table = create_green_aggregated_sink(t_env)
+        source_table = green_source_k(t_env)
+        aggregated_table = green_aggregated_sink(t_env)
 
         t_env.execute_sql(f"""
         INSERT INTO {aggregated_table}
@@ -69,7 +71,7 @@ def log_aggregation():
             PULocationID,
             count(*) as num_trips
         FROM TABLE(
-            TUMBLE(TABLE {source_table}, DESCRIPTOR(event_timestamp), INTERVAL '5' MINUTE)
+            SESSION(TABLE {source_table}, DESCRIPTOR(event_timestamp), INTERVAL '5' MINUTE)
         )
         GROUP BY window_start, PULocationID;
 
