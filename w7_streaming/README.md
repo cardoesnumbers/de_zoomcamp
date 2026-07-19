@@ -282,7 +282,7 @@ Before running the Flink jobs, create the necessary PostgreSQL tables
 for your results.
 
 Important notes for the Flink jobs:
-
+Petsamovägen 2, 873 97 Mjällom
 - Place your job files in `workshop/src/job/` - this directory is
   mounted into the Flink containers at `/opt/src/job/`
 - Submit jobs with:
@@ -353,7 +353,40 @@ How many trips were in the longest session?
 - 12
 - 31
 - 51
-- 81
+- 81 ❓
+
+The result I got (72) was none of the above. I tried a couple of things but still no change, could it be the dataset was updated with newer info vs what it was during the course? Here is my aggregation logic. It seems I needed to include also the partition by part that was not present in the previous exercises. Still not sure what might be causing the difference in the result.
+
+~~~sql
+        t_env.execute_sql(f"""
+        INSERT INTO {aggregated_table}
+        SELECT
+            window_start AS session_start,
+            window_end AS session_end,
+            PULocationID,
+            COUNT(*) AS num_trips
+        FROM TABLE(
+            SESSION(
+                TABLE {source_table} PARTITION BY PULocationID,
+                DESCRIPTOR(event_timestamp), 
+                INTERVAL '5' MINUTE)
+        )
+        GROUP BY PULocationID, window_start, window_end;
+
+        """).wait()
+~~~
+
+Postgres table is:
+
+~~~sql
+CREATE TABLE agg_green_sessions (
+    session_start TIMESTAMP NOT NULL,
+    session_end TIMESTAMP NOT NULL,
+    PULocationID INT NOT NULL,
+    num_trips BIGINT,
+    PRIMARY KEY (PULocationID, session_start)
+);
+~~~
 
 
 ## Question 6. Tumbling window - largest tip

@@ -15,7 +15,7 @@ def green_source_k(t_env):
         CREATE TABLE {table_name} (
             lpep_pickup_datetime VARCHAR,
             PULocationID INTEGER,
-            event_timestamp AS TO_TIMESTAMP_LTZ(lpep_pickup_datetime, 'yyyy-MM-dd HH:mm:ss'),
+            event_timestamp AS CAST(lpep_pickup_datetime AS TIMESTAMP_LTZ(3)),
             WATERMARK FOR event_timestamp AS event_timestamp - INTERVAL '5' SECOND
         ) WITH (
             'connector' = 'kafka',
@@ -35,11 +35,11 @@ def green_aggregated_sink(t_env): #this is where the aggregation lands
     t_env.execute_sql(f"DROP TABLE IF EXISTS {table_name}")
     sink_ddl = f"""
         CREATE TABLE {table_name} (
-            window_start TIMESTAMP(3),
-            window_end TIMESTAMP(3),
+            session_start TIMESTAMP(3),
+            session_end TIMESTAMP(3),
             PULocationID INT,
             num_trips BIGINT,
-            PRIMARY KEY (window_start, window_end, PULocationID) NOT ENFORCED
+            PRIMARY KEY (PULocationID, session_start) NOT ENFORCED
         ) WITH (
             'connector' = 'jdbc',
             'url' = 'jdbc:postgresql://postgres:5432/postgres',
@@ -52,7 +52,7 @@ def green_aggregated_sink(t_env): #this is where the aggregation lands
     t_env.execute_sql(sink_ddl)
     return table_name
 
-
+#to group trips that are close in time
 def log_aggregation():
     env = StreamExecutionEnvironment.get_execution_environment()
     env.enable_checkpointing(10 * 1000)
@@ -68,14 +68,17 @@ def log_aggregation():
         t_env.execute_sql(f"""
         INSERT INTO {aggregated_table}
         SELECT
-            window_start,
-            window_end,
+            window_start AS session_start,
+            window_end AS session_end,
             PULocationID,
             COUNT(*) AS num_trips
         FROM TABLE(
-            SESSION(TABLE {source_table}, DESCRIPTOR(event_timestamp), INTERVAL '5' MINUTE)
+            SESSION(
+                TABLE {source_table} PARTITION BY PULocationID,
+                DESCRIPTOR(event_timestamp), 
+                INTERVAL '5' MINUTE)
         )
-        GROUP BY window_start, window_end, PULocationID;
+        GROUP BY PULocationID, window_start, window_end;
 
         """).wait()
 

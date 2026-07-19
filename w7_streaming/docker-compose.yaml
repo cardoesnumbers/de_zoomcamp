@@ -52,6 +52,7 @@ services:
   taskmanager:
     image: pyflink-workshop
     pull_policy: never
+    restart: on-failure
     expose:
       - "6121"
       - "6122"
@@ -65,8 +66,8 @@ services:
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
-        taskmanager.memory.process.size: 1728m
-        taskmanager.numberOfTaskSlots: 15
+        taskmanager.memory.process.size: 2048m
+        taskmanager.numberOfTaskSlots: 4
         parallelism.default: 3
 
   postgres:
