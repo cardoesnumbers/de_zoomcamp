@@ -386,3 +386,5 @@ Which hour had the highest total tip amount?
 Similar to the question before, I had a hard time making sure the datatypes and even the grouping used in the job matched the postgres table. I also had to remember to simplifly the job to only use the columns really needed in the exercise. 
 
 Overall I would say very learning yet frustrating experience, so, data engineering? 
+
+As mentioned at the beginning, this module also wraps up the 9-week data engineering zoomcamp that in my case took basically more than twice the amount of time to complete. Still I feel proud of having been able to go through the whole thing. My interest in data engineering remains and actually grew during this course. I look forward to using the learnings and tools from the camp into work and freetime. What is left now the course final project which I intend to research in the next couple of days.
